@@ -46,21 +46,31 @@ local function GetClosestTarget()
     local minDistance = math.huge
 
     for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character then
-            local head = player.Character:FindFirstChild("Head")
-            if head and IsEnemy(player) and IsInFOV(head.Position) and IsVisible(head) then
-                local dist = (LocalPlayer.Character.Head.Position - head.Position).Magnitude
-                if dist < minDistance then
-                    minDistance = dist
-                    closest = head
+        if player ~= LocalPlayer then
+            local character = player.Character
+            if character then
+                local humanoid = character:FindFirstChild("Humanoid")
+                local head = character:FindFirstChild("Head")
+
+                if humanoid and head and humanoid.Health > 0 then
+                    if IsEnemy(player) and IsInFOV(head.Position) and IsVisible(head) then
+                        local dist = (LocalPlayer.Character.Head.Position - head.Position).Magnitude
+                        if dist < minDistance then
+                            minDistance = dist
+                            closest = head
+                        end
+                    end
                 end
             end
         end
     end
+
     return closest
 end
 
 RunService.RenderStepped:Connect(function()
+    if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("Head") then return end
+
     UpdateFOVPosition()
 
     local target = GetClosestTarget()
